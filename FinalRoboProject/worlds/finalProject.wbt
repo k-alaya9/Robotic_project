@@ -34,8 +34,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.23581877751878524 -0.19673334931100714 0.9516750986751829 4.483675809201768
-  position 0.6604445236226446 5.941872006354285 3.268456826789215
+  orientation 0.24993560168701706 0.34720806495047996 -0.9038687706977667 1.3450763938174701
+  position -3.399575853301342 8.083950338812517 4.922272376728277
   follow "youBot"
   followType "None"
 }
@@ -88,7 +88,7 @@ DEF ColorMatrix_ Group {
         Shape {
           appearance Appearance {
             material Material {
-              diffuseColor 0.5 0.5 0
+              diffuseColor 0 0 0
             }
           }
           geometry Box {
@@ -99,7 +99,24 @@ DEF ColorMatrix_ Group {
       name "solid(3)"
     }
     Solid {
-      translation -1.37 -3.46 -0.0307242
+      translation 0.0699992 0.11 0.0692819
+      rotation 5.07515e-07 5.07515e-07 1 1.5708
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry Box {
+            size 0.08 0.01 0.2
+          }
+        }
+      ]
+      name "solid(3)"
+    }
+    Solid {
+      translation -1.93 0.039996 -0.0307181
       rotation 0.5773489358556708 0.5773509358554485 0.5773509358554485 2.0944
       children [
         Shape {
@@ -109,7 +126,26 @@ DEF ColorMatrix_ Group {
             }
           }
           geometry Box {
-            size 3 0.01 3
+            size 2 0.01 2
+          }
+          castShadows FALSE
+          isPickable FALSE
+        }
+      ]
+      name "solid(3)"
+    }
+    Solid {
+      translation 1.95 0.0400173 -0.0307244
+      rotation 0.5773489358556708 0.5773509358554485 0.5773509358554485 2.0944
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 1 1 1
+            }
+          }
+          geometry Box {
+            size 2 0.01 2
           }
           castShadows FALSE
           isPickable FALSE
@@ -135,7 +171,7 @@ DEF ColorMatrix_ Group {
       name "solid(2)"
     }
     Solid {
-      translation 0.49 -1.14 0.019282
+      translation 0.56 -1.14 0.019282
       rotation 0 -0.9999999999999999 0 1.5707953071795862
       children [
         Shape {
@@ -152,7 +188,7 @@ DEF ColorMatrix_ Group {
       name "solid(2)"
     }
     Solid {
-      translation 0.19 -1.14 0.019281
+      translation 0.26 -1.14 0.019281
       rotation 0 1 0 -1.5707953071795862
       children [
         Shape {
@@ -173,7 +209,7 @@ DEF ColorMatrix_ Group {
 DEF _2ndColorMatrix_ Group {
   children [
     Solid {
-      translation 0.29 -1.14 0.019282
+      translation 0.36 -1.14 0.019282
       rotation 0 1 0 -1.5707953071795862
       children [
         Shape {
@@ -190,7 +226,7 @@ DEF _2ndColorMatrix_ Group {
       name "solid(4)"
     }
     Solid {
-      translation 0.39 -1.14 0.019282
+      translation 0.46 -1.14 0.019282
       rotation 0 1 0 -1.5707953071795862
       children [
         Shape {
@@ -253,8 +289,8 @@ Wall {
   }
 }
 DEF green Solid {
-  translation -2.77866 1.21038 0.0174996
-  rotation 5.30183e-17 3.39806e-17 -1 -1.2432553071795862
+  translation -2.7574 1.20862 0.0174996
+  rotation -5.94748e-17 -5.01831e-17 1 0.981455
   children [
     Transform {
       scale 0.05 0.05 0.05
@@ -294,8 +330,8 @@ DEF green Solid {
   ]
 }
 DEF blue Solid {
-  translation -2.79808 -0.34121 0.0174994
-  rotation 3.58139e-17 2.53875e-13 -1 -1.5050553071795862
+  translation -2.75821 -0.363182 0.0174994
+  rotation -2.93345e-14 -2.22575e-13 1 1.76686
   children [
     Transform {
       scale 0.05 0.05 0.05
@@ -374,7 +410,7 @@ DEF red Solid {
   ]
 }
 DEF yellow Solid {
-  translation -2.79204 0.486151 0.0174996
+  translation -2.812 0.487465 0.0174996
   rotation 5.23052e-17 -8.6637e-17 -1 -1.5050553071795862
   children [
     Transform {
@@ -1076,8 +1112,8 @@ Youbot {
       ]
     }
     Camera {
-      translation -0.22115 -0.190001 -0.045
-      rotation 0 0 1 -1.5707953071795862
+      translation -0.25115 -0.190001 -0.055
+      rotation 0 0 -0.9999999999999999 1.5707953071795862
       fieldOfView 0.1
       lens Lens {
       }
@@ -1086,8 +1122,6 @@ Youbot {
       zoom Zoom {
       }
       recognition Recognition {
-      }
-      lensFlare LensFlare {
       }
     }
     Camera {

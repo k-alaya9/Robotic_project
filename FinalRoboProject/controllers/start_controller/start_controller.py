@@ -2,6 +2,54 @@ import cv2 as cv
 import numpy as np
 from controller import Robot
 import math
+class PIDController:
+    def __init__(self, Kp, Ki, Kd):
+        self.Kp = Kp
+        self.Ki = Ki
+        self.Kd = Kd
+        self.previous_error = 0
+        self.integral = 0
+
+    def compute(self, error, timestep):
+        """Calculate the PID control output."""
+        self.integral += error * timestep
+        derivative = (error - self.previous_error) / timestep
+        self.previous_error = error
+
+        # PID formula
+        return self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+
+
+
+pid = PIDController(Kp=0.01, Ki=0.01, Kd=0.001)  
+
+def navigate_robot(wheels, image_width, position, isForward, threshold=35, timestep=0.032):
+    cx, cy, width, height = position
+
+    if cx is not None:  
+        center_offset = cx - image_width // 2  
+        # value=front_sensor.getValue()
+        if not isForward:
+            if width >= 1080: 
+                for wheel in wheels.values():
+                    wheel.setVelocity(0.0)
+                print("Robot stopped: Close to the object.")
+                return True
+        control_output = pid.compute(center_offset, timestep)
+
+        base_speed = 5.0 
+        left_speed = base_speed - control_output
+        right_speed = base_speed + control_output
+
+        wheels["front_left"].setVelocity(left_speed)
+        wheels["front_right"].setVelocity(right_speed)
+        wheels["rear_left"].setVelocity(left_speed)
+        wheels["rear_right"].setVelocity(right_speed)
+    else:
+        for wheel in wheels.values():
+            wheel.setVelocity(0.0)
+
+    return False
 
 robot = Robot()
 timestep = int(robot.getBasicTimeStep())
@@ -94,39 +142,39 @@ def receive_message():
         print(f"Received: {message}")
         return message
     return None
-def navigate_robot(wheels, image_width, position,isForward,threshold=50):
-    if position is not None:
-        cx, _ ,width,_= position
-        center_offset = cx - image_width // 2
-        # value=front_sensor.getValue()
-        # print(value)
-        if not isForward:
-            if width >= 1080: 
-                for wheel in wheels.values():
-                    wheel.setVelocity(0.0)
-                print("Robot stopped: Close to the object.")
-                return True
+# def navigate_robot(wheels, image_width, position,isForward,threshold=50):
+#     if position is not None:
+#         cx, _ ,width,_= position
+#         center_offset = cx - image_width // 2
+#         # value=front_sensor.getValue()
+#         # print(value)
+#         if not isForward:
+#             if width >= 1080: 
+#                 for wheel in wheels.values():
+#                     wheel.setVelocity(0.0)
+#                 print("Robot stopped: Close to the object.")
+#                 return True
 
        
-        if center_offset < -threshold:  
-            wheels["front_left"].setVelocity(5)
-            wheels["front_right"].setVelocity(-5)
-            wheels["rear_left"].setVelocity(5)
-            wheels["rear_right"].setVelocity(-5)
-        elif center_offset > threshold: 
-            wheels["front_left"].setVelocity(-5)
-            wheels["front_right"].setVelocity(5)
-            wheels["rear_left"].setVelocity(-5)
-            wheels["rear_right"].setVelocity(5)
-        else:  
-            wheels["front_left"].setVelocity(5)
-            wheels["front_right"].setVelocity(5)
-            wheels["rear_left"].setVelocity(5)
-            wheels["rear_right"].setVelocity(5)
-    else:
-        for wheel in wheels.values():
-            wheel.setVelocity(0.0)
-    return False
+#         if center_offset < -threshold:  
+#             wheels["front_left"].setVelocity(5)
+#             wheels["front_right"].setVelocity(-5)
+#             wheels["rear_left"].setVelocity(5)
+#             wheels["rear_right"].setVelocity(-5)
+#         elif center_offset > threshold: 
+#             wheels["front_left"].setVelocity(-5)
+#             wheels["front_right"].setVelocity(5)
+#             wheels["rear_left"].setVelocity(-5)
+#             wheels["rear_right"].setVelocity(5)
+#         else:  
+#             wheels["front_left"].setVelocity(5)
+#             wheels["front_right"].setVelocity(5)
+#             wheels["rear_left"].setVelocity(5)
+#             wheels["rear_right"].setVelocity(5)
+#     else:
+#         for wheel in wheels.values():
+#             wheel.setVelocity(0.0)
+#     return False
 
 def classify_color(color):
     blue,green,red  = color
@@ -163,8 +211,8 @@ def catch_box(devices, robot, timestep):
     # devices["arm_joints"][2].setPosition(-0.9)
     
     devices["arm_joints"][1].setPosition(0.0)
-    devices["arm_joints"][2].setPosition(-1.4)
-    devices["arm_joints"][3].setPosition(-1.2)
+    devices["arm_joints"][2].setPosition(-1.43)
+    devices["arm_joints"][3].setPosition(-1.24)
 
     delay_time = 1500  
     steps = int(delay_time / timestep) 
@@ -184,7 +232,7 @@ def put_box(devices, robot, timestep):
     for _ in range(steps):
         robot.step(timestep)
     # devices["arm_joints"][1].setVelocity(0.3)
-    devices["arm_joints"][2].setVelocity(0.75)
+    # devices["arm_joints"][2].setVelocity(0.75)
     # devices["arm_joints"][3].setVelocity(0.3)
     # devices["arm_joints"][1].setPosition(0.5)
     # devices["arm_joints"][1].setPosition(0.80000000000000013)
@@ -211,9 +259,8 @@ def put_box(devices, robot, timestep):
     turn_right_180_degrees()
 
 
-def turn_right_180_degrees(turn_time=5.2):
-    # دوران الروبوت 90 درجة لليمين
-    # turn_time = 2.4# وقت الدوران (قد يختلف بناءً على الروبوت)
+def turn_right_180_degrees(turn_time=5.1):
+
     global turn_left
     start_time = robot.getTime()
 
@@ -250,7 +297,7 @@ def move_forward(image):
     position = find_contours(mask)
     x,y,z,v=position
     if y:
-        navigate_robot(wheels,width,position,True,threshold=20)
+        navigate_robot(wheels,width,position,True,threshold=50)
 
     # wheels["front_left"].setVelocity(10)
     # wheels["front_right"].setVelocity(10)
@@ -275,8 +322,8 @@ def catch_box_2(devices, robot, timestep):
     # devices["arm_joints"][3].setPosition(1.0)
 
     devices["arm_joints"][1].setPosition(0.8)
-    devices["arm_joints"][2].setPosition(0.6)
-    devices["arm_joints"][3].setPosition(1.65)
+    devices["arm_joints"][2].setPosition(0.55)
+    devices["arm_joints"][3].setPosition(1.6)
 
     delay_time = 1500  
     steps = int(delay_time / timestep) 
@@ -326,6 +373,13 @@ def main():
         # turn_right_180_degrees()
         # catch_box(devices, robot, timestep)
         # put_box(devices, robot, timestep)
+        # width = camera.getWidth()
+        # height = camera.getHeight()
+        # raw_image = camera.getImage()
+        # image = np.frombuffer(raw_image, dtype=np.uint8).reshape((height, width, 4))
+        # image=cv.resize(image,(10*width,10*height))
+        # bgr_image = cv.cvtColor(image, cv.COLOR_BGRA2BGR)
+        # cv.imshow("Camera", bgr_image)
         message = receive_message()
         if message:
             startTask=True
@@ -344,6 +398,7 @@ def main():
             image = np.frombuffer(raw_image, dtype=np.uint8).reshape((height, width, 4))
             image=cv.resize(image,(10*width,10*height))
             bgr_image = cv.cvtColor(image, cv.COLOR_BGRA2BGR)
+            # cv.imshow("Camera", bgr_image)
             data = np.reshape(bgr_image, (-1,3))
             data = np.float32(data)
 
@@ -356,7 +411,7 @@ def main():
                     colors.append(color)
             image = front_camera.getImage()
             if is_close==True:
-                if front_sensor.getValue() > 390:
+                if front_sensor.getValue() > 360:
                     move_forward(image)
                 else:
                     stop_moving()
@@ -403,7 +458,6 @@ def main():
                         # colors.pop()
                         # break
             
-                cv.imshow("Camera", bgr_image)
         if cv.waitKey(1) == 27: 
             break
 main()
