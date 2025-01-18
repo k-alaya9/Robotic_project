@@ -19,6 +19,7 @@ class PIDController:
         # PID formula
         return self.Kp * error + self.Ki * self.integral + self.Kd * derivative
 
+counter=0
 
 # Initialize the PID controller
 pid = PIDController(Kp=0.01, Ki=0.01, Kd=0.001)  # Tune these values based on your robot's response
@@ -31,7 +32,7 @@ def navigate_robot(wheels, image_width, position, isForward, threshold=35, times
         value=front_sensor.getValue()
         # print(value)
         if not isForward:
-            if value < 620: 
+            if value < 618: 
                 for wheel in wheels.values():
                     wheel.setVelocity(0.0)
                 print("Robot stopped: Close to the object.")
@@ -355,7 +356,7 @@ def put_box_2(devices, robot, timestep):
 
 
 def main():
-    
+    global counter
     global is_close
     global isCatch
     global colors
@@ -368,7 +369,8 @@ def main():
         # put_box(devices, robot, timestep)
         # catch_box_2(devices, robot, timestep)
         # put_box_2(devices, robot, timestep)
-
+        if counter >= 4:
+            break
         width = camera.getWidth()
         height = camera.getHeight()
         raw_image = camera.getImage()
@@ -401,6 +403,7 @@ def main():
                 isCatch=False
                 turn_right_180_degrees(turn_time=5)
                 is_close=False
+                counter= counter+1
 
                 
         if image:
@@ -422,8 +425,15 @@ def main():
             if not is_close and colors and colors[0] in detected_positions and isCatch == False:
                 if colors[0]=='Red' or colors[0]=='Blue':
                         turn_left=True
+                # if len(detected_positions)!=1:    
                 position = detected_positions[colors[0]]
                 is_close = navigate_robot(wheels, width, position,False)
+                # else: 
+                #     mask = detect_color(bgr_image, np.array([0,0,0]), np.array([0,0,0]))
+                #     position = find_contours(mask)
+                #     if position[0]:
+                #         navigate_robot(wheels,width,position,False,threshold=50)
+                    
                 if is_close:
                     # recognized_objects = front_camera.getRecognitionObjects()
                     # position=get_object_positions(recognized_objects)
@@ -431,6 +441,7 @@ def main():
                     catch_box(devices, robot, timestep)
                     put_box(devices, robot, timestep)
                     colors.remove(colors[0])
+                    
 
                     # detect_box_position(bgr_image)
                     # colors.pop()

@@ -20,7 +20,7 @@ class PIDController:
         return self.Kp * error + self.Ki * self.integral + self.Kd * derivative
 
 
-
+counter=0
 pid = PIDController(Kp=0.01, Ki=0.01, Kd=0.001)  
 
 def navigate_robot(wheels, image_width, position, isForward, threshold=35, timestep=0.032):
@@ -28,9 +28,9 @@ def navigate_robot(wheels, image_width, position, isForward, threshold=35, times
 
     if cx is not None:  
         center_offset = cx - image_width // 2  
-        # value=front_sensor.getValue()
+        value=front_sensor.getValue()
         if not isForward:
-            if width >= 1080: 
+            if value < 800: 
                 for wheel in wheels.values():
                     wheel.setVelocity(0.0)
                 print("Robot stopped: Close to the object.")
@@ -118,7 +118,7 @@ COLOR_RANGES = {
     "Yellow": (np.array([25, 0, 10]), np.array([40, 255,255]))
 }
 
-MIN_CONTOUR_AREA = 500
+MIN_CONTOUR_AREA = 1000
 def detect_color(image, lower_hsv, upper_hsv):
     hsv_image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
     mask = cv.inRange(hsv_image, lower_hsv, upper_hsv)
@@ -360,6 +360,7 @@ def put_box_2(devices, robot, timestep):
 def main():
     isFirstTime= True
     global startTask
+    global counter
     global is_close
     global isCatch
     global colors
@@ -380,6 +381,8 @@ def main():
         # image=cv.resize(image,(10*width,10*height))
         # bgr_image = cv.cvtColor(image, cv.COLOR_BGRA2BGR)
         # cv.imshow("Camera", bgr_image)
+        if counter >= 4:
+            break
         message = receive_message()
         if message:
             startTask=True
@@ -411,7 +414,7 @@ def main():
                     colors.append(color)
             image = front_camera.getImage()
             if is_close==True:
-                if front_sensor.getValue() > 360:
+                if front_sensor.getValue() > 330:
                     move_forward(image)
                 else:
                     stop_moving()
@@ -435,7 +438,7 @@ def main():
                     if position[0] is not None:
                         detected_positions[color] = position
 
-                    print(colors)
+                    # print(colors)
                     # print(detected_positions)
                 
                 if not is_close and colors and colors[0] in detected_positions and isCatch == True:
@@ -451,7 +454,7 @@ def main():
                         put_box_2(devices, robot, timestep)
                         colors.remove(colors[0])
                         turn_right_180_degrees()
-
+                        counter = counter +1
                         # isCatch=False
 
                         # detect_box_position(bgr_image)
