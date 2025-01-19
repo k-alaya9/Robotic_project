@@ -16,42 +16,38 @@ class PIDController:
         derivative = (error - self.previous_error) / timestep
         self.previous_error = error
 
-        # PID formula
         return self.Kp * error + self.Ki * self.integral + self.Kd * derivative
 
 counter=0
 
-# Initialize the PID controller
-pid = PIDController(Kp=0.01, Ki=0.01, Kd=0.001)  # Tune these values based on your robot's response
+pid = PIDController(Kp=0.01, Ki=0.01, Kd=0.001) 
 
 def navigate_robot(wheels, image_width, position, isForward, threshold=35, timestep=0.032):
     cx, cy, width, height = position
 
-    if cx is not None:  # Valid black area found
-        center_offset = cx - image_width // 2  # Error is the distance from the center
+    if cx is not None:  
+        center_offset = cx - image_width // 2  
         value=front_sensor.getValue()
-        # print(value)
         if not isForward:
             if value < 618: 
                 for wheel in wheels.values():
                     wheel.setVelocity(0.0)
                 print("Robot stopped: Close to the object.")
                 return True
-        # Compute PID output
+
         control_output = pid.compute(center_offset, timestep)
 
-        # Adjust wheel velocities based on control output
-        base_speed = 5.0  # Base speed for the wheels
+        
+        base_speed = 5.0  
         left_speed = base_speed - control_output
         right_speed = base_speed + control_output
 
-        # Set wheel velocities
         wheels["front_left"].setVelocity(left_speed)
         wheels["front_right"].setVelocity(right_speed)
         wheels["rear_left"].setVelocity(left_speed)
         wheels["rear_right"].setVelocity(right_speed)
     else:
-        # Stop the robot if no valid black area is found
+        
         for wheel in wheels.values():
             wheel.setVelocity(0.0)
 
@@ -84,7 +80,7 @@ wheels = {
         "rear_right": robot.getDevice("wheel4"),
     }
 for wheel in wheels.values():
-    wheel.setPosition(float('inf'))  # Set wheels to velocity mode
+    wheel.setPosition(float('inf'))   
     wheel.setVelocity(0.0)
 
 arms_joints = {"arm1": robot.getDevice("arm1"),
@@ -95,7 +91,7 @@ arms_joints = {"arm1": robot.getDevice("arm1"),
     }
 for joint in arms_joints.values():
     joint.setPosition(0)
-    # joint.setVelocity(0.4) 
+   
 
 devices={
     'gripper_fingers':[
@@ -148,42 +144,7 @@ def find_contours(mask):
         cy = y + h // 2  
         return cx, cy, w, h 
 
-    return None, None, 0, 0  # Default if no valid contours are found
-
-
-# def navigate_robot(wheels, image_width, position,isForward,threshold=35):
-#     if position is not None:
-#         cx, _ ,width,_= position
-#         center_offset = cx - image_width // 2
-#         value=front_sensor.getValue()
-#         # print(value)
-#         if not isForward:
-#             if value < 620: 
-#                 for wheel in wheels.values():
-#                     wheel.setVelocity(0.0)
-#                 print("Robot stopped: Close to the object.")
-#                 return True
-
-       
-#         if center_offset < -threshold:  
-#             wheels["front_left"].setVelocity(5)
-#             wheels["front_right"].setVelocity(-5)
-#             wheels["rear_left"].setVelocity(5)
-#             wheels["rear_right"].setVelocity(-5)
-#         elif center_offset > threshold: 
-#             wheels["front_left"].setVelocity(-5)
-#             wheels["front_right"].setVelocity(5)
-#             wheels["rear_left"].setVelocity(-5)
-#             wheels["rear_right"].setVelocity(5)
-#         else:  
-#             wheels["front_left"].setVelocity(5)
-#             wheels["front_right"].setVelocity(5)
-#             wheels["rear_left"].setVelocity(5)
-#             wheels["rear_right"].setVelocity(5)
-#     else:
-#         for wheel in wheels.values():
-#             wheel.setVelocity(0.0)
-#     return False
+    return None, None, 0, 0  
 
 def classify_color(color):
     blue,green,red  = color
@@ -208,17 +169,10 @@ def gripper_close(devices):
     devices["gripper_fingers"][1].setPosition(0.014)
     print("Gripper fingers closed.")
     
-
-
-# Function to set the gripper and arm positions
 def catch_box(devices, robot, timestep):
  
     gripper_open(devices)
 
-    # devices["arm_joints"][1].setPosition(-1.0)
-    # devices["arm_joints"][3].setPosition(-1.0)
-    # devices["arm_joints"][2].setPosition(-0.9)
-    
     devices["arm_joints"][1].setPosition(-1.5)
     devices["arm_joints"][2].setPosition(-0.95)
     devices["arm_joints"][3].setPosition(-1.125)
@@ -251,7 +205,7 @@ def put_box(devices, robot, timestep):
     for _ in range(steps):
         robot.step(timestep)
         
-    # reset_arm(devices)
+    
 
     for _ in range(steps):
         robot.step(timestep)
@@ -291,12 +245,10 @@ def get_object_positions(recognized_objects):
 
 is_close=False
 def move_forward(image):
-    # image=back_camera.getImage()
     width = front_camera.getWidth()
     height = front_camera.getHeight()
     img_array = np.frombuffer(image, np.uint8).reshape((height, width, 4))
     bgr_image = cv.cvtColor(img_array, cv.COLOR_BGRA2BGR)
-    # cv.imshow("test",bgr_image)
     mask = detect_color(bgr_image, np.array([0,0,0]), np.array([0,0,0]))
     position = find_contours(mask)
     if position[0]:
@@ -315,9 +267,7 @@ def catch_box_2(devices, robot, timestep):
  
     gripper_open(devices)
 
-    # devices["arm_joints"][1].setPosition(0.8)
-    # devices["arm_joints"][2].setPosition(0.75)
-    # devices["arm_joints"][3].setPosition(1.0)
+
 
     devices["arm_joints"][1].setPosition(0.8)
     devices["arm_joints"][2].setPosition(0.51)
@@ -331,7 +281,7 @@ def catch_box_2(devices, robot, timestep):
     gripper_close(devices)
 
 def put_box_2(devices, robot, timestep):
-    # turn_right_180_degrees()
+    
 
     global isCatch
     steps = int(3500 / timestep) 
@@ -345,7 +295,7 @@ def put_box_2(devices, robot, timestep):
 
     for _ in range(steps):
         robot.step(timestep)
-    # reset_arm(devices)
+    
     devices["arm_joints"][3].setPosition(0)
 
     gripper_open(devices)
@@ -362,13 +312,6 @@ def main():
     global colors
     global turn_left
     while robot.step(timestep) != -1:
-        
-        # print(front_sensor.getValue())
-
-        # catch_box(devices, robot, timestep)
-        # put_box(devices, robot, timestep)
-        # catch_box_2(devices, robot, timestep)
-        # put_box_2(devices, robot, timestep)
         if counter >= 4:
             break
         width = camera.getWidth()
@@ -383,13 +326,10 @@ def main():
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
         flags = cv.KMEANS_RANDOM_CENTERS
         compactness,labels,centers = cv.kmeans(data,1,None,criteria,10,flags)
-
-        # print('Dominant color is: bgr({})'.format(centers[0].astype(np.int32)))
         color =classify_color(centers[0].astype(np.int32))
         if len(colors)==0 or len(colors)<4:
             if color!="Unknown" and colors.__contains__(color)==False:
                 colors.append(color)
-        # print(colors)
         image = front_camera.getImage()
         if isCatch==True:
             if front_sensor.getValue() > 380:
@@ -419,35 +359,17 @@ def main():
                 if position[0] is not None:
                     detected_positions[color] = position
 
-                # print(colors)
-                # print(detected_positions)
-            
             if not is_close and colors and colors[0] in detected_positions and isCatch == False:
                 if colors[0]=='Red' or colors[0]=='Blue':
                         turn_left=True
-                # if len(detected_positions)!=1:    
                 position = detected_positions[colors[0]]
                 is_close = navigate_robot(wheels, width, position,False)
-                # else: 
-                #     mask = detect_color(bgr_image, np.array([0,0,0]), np.array([0,0,0]))
-                #     position = find_contours(mask)
-                #     if position[0]:
-                #         navigate_robot(wheels,width,position,False,threshold=50)
                     
                 if is_close:
-                    # recognized_objects = front_camera.getRecognitionObjects()
-                    # position=get_object_positions(recognized_objects)
-                    # catch_box_to_position(position)
                     catch_box(devices, robot, timestep)
                     put_box(devices, robot, timestep)
                     colors.remove(colors[0])
                     
-
-                    # detect_box_position(bgr_image)
-                    # colors.pop()
-                    # break
-            
-            # cv.imshow("Camera", bgr_image)
         if cv.waitKey(1) == 27: 
             break
 main()

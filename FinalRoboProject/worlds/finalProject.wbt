@@ -330,7 +330,7 @@ DEF green Solid {
   ]
 }
 DEF blue Solid {
-  translation -2.74214 -0.356681 -0.0025006
+  translation -2.77352 -0.352717 -0.0025006
   rotation -2.93345e-14 -2.22575e-13 1 1.76686
   children [
     Transform {
